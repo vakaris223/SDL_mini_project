@@ -2,7 +2,10 @@
 #define Game_hpp
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <iostream>
+
+using namespace std;
 
 class Game{
 public:
@@ -18,6 +21,7 @@ public:
     bool running(){return isRunning;};
 
 private:
+    int count = 0; //lets say fps or how fast the game runs
     bool isRunning;
     SDL_Window *window;
     SDL_Renderer *renderer;
