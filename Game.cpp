@@ -1,11 +1,13 @@
-#include "Game.hpp"
+#include "Game.h"
 #include "TextureManager.h"
+#include "GameObject.h"
+#include "InputManager.h"
 
-SDL_Texture* sprites[2];
-SDL_Rect transformers[1];
+GameObject* player;
+GameObject* tile;
 
-//SDL_Texture* playerTexture;
-//SDL_Texture* test;
+InputManager manager;
+
 Game::Game()
 {
 
@@ -35,7 +37,7 @@ void Game::init(const char* title, int x, int y, int width, int height, bool ful
         renderer = SDL_CreateRenderer(window, -1, 0);
         if(renderer)
         {
-            SDL_SetRenderDrawColor(renderer, 255,255,255,255);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             cout << "renderer created" << endl;
         }
         isRunning = true;
@@ -45,12 +47,14 @@ void Game::init(const char* title, int x, int y, int width, int height, bool ful
         isRunning = false;
     }
 
-    sprites[0] = TextuteManager::LoadTexture("assets/player.png", renderer);
-    sprites[1] = TextuteManager::LoadTexture("assets/test.png", renderer);
-    
+    player = new GameObject("assets/player.png", renderer, 100,100);
+    tile = new GameObject("assets/test.png", renderer, 1, 1);
+    manager.obj = player;
 }
 void Game::handleEvents()
 {
+
+
     SDL_Event event;
     SDL_PollEvent(&event);
     switch (event.type)
@@ -60,67 +64,57 @@ void Game::handleEvents()
             break;
         case SDL_KEYDOWN:
           switch (event.key.keysym.sym) {
-            case SDLK_w:
-                transformers[0].y = count;
-                break;
-            case SDLK_s:
-                transformers[0].y -= 10;
-                break;
-            case SDLK_a:
-                transformers[0].x -= 10;
-                break;
-            case SDLK_d:
-                transformers[0].x += 10;
-                break;
             case SDLK_q:
                 isRunning = false;
                 break;
+            case SDL_KEYDOWN:
+				manager.doKeyDown(&event.key);
+				break;
+			case SDL_KEYUP:
+				manager.doKeyUp(&event.key);
+				break;
           }
           break;
         
         default:
             break;
     }   
+
+   
 }
 
 void Game::update()
 {
-    count++;
+    player -> Update();
+    if (player->up)
+		{
+			player->ypos -= 4;
+		}
 
-    //PLAYER
+		if (player->down)
+		{
+			player->ypos += 4;
+		}
 
+		if (player->left)
+		{
+			player->xpos -= 4;
+		}
 
-    transformers[0].h = 32;
-    transformers[0].w = 32;
-    transformers[0].x = 50;
-    transformers[0].y = 50;
+		if (player->right)
+		{
+			player->xpos += 4;
+		}
 
-    //TILE
-    transformers[1].h = 32;
-    transformers[1].w = 32;
+    tile -> Update();
 
-    
-
-    cout << count << endl;
 }
 void Game::render()
 {
     SDL_RenderClear(renderer);
     //adding stuff here to render everything
-    for (int i = 0; i < 10; i++)
-    {
-        for (int j = 0; j < 10; j++)
-        {
-            transformers[1].x = j * 32;
-            transformers[1].y = i * 32;
-
-            SDL_RenderCopy(renderer, sprites[1], NULL, &transformers[1]);
-        }
-
-    }
-    
-    SDL_RenderCopy(renderer, sprites[0], NULL, &transformers[0]);
-    
+    player->Render();
+    tile->Render();
     //--------------------------------
     
     SDL_RenderPresent(renderer);
